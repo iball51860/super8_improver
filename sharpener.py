@@ -15,10 +15,15 @@ scene = 2
 def sharpen_frame(frame_index):
     print('Sharpening', frame_index, 'of', n_frames)
 
-    image = Image.open('out/{}/{}.jpg'.format(str(scene).zfill(2), str(frame_index).zfill(6)))
+    image = Image.open('out/{}_median/{}.jpg'.format(str(scene).zfill(2), str(frame_index).zfill(6)))
     image = image.filter(ImageFilter.UnsharpMask(radius=15, percent=150, threshold=0))
 
-    image.save('out/{}_sharp/{}.jpg'.format(str(scene).zfill(2), str(frame_index).zfill(6)))
+    image.save('out/{}_median_sharp/{}.jpg'.format(str(scene).zfill(2), str(frame_index).zfill(6)))
+
+    image = Image.open('out/{}_average/{}.jpg'.format(str(scene).zfill(2), str(frame_index).zfill(6)))
+    image = image.filter(ImageFilter.UnsharpMask(radius=15, percent=150, threshold=0))
+
+    image.save('out/{}_average_sharp/{}.jpg'.format(str(scene).zfill(2), str(frame_index).zfill(6)))
 
 
 try:
