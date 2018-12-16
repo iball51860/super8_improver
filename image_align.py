@@ -5,7 +5,7 @@ import numpy as np
 
 n_stack = len([x for x in filter(lambda x: x[0] != '.', os.listdir('input'))])
 n_frames = len([x for x in filter(lambda x: x[0] != '.', os.listdir('input/1/02'))])
-scene = 2
+# scene = 2
 size_image = cv2.imread('input/{}/{}/{}.jpg'.format(1, str(1).zfill(2), str(1).zfill(6)))
 sz = size_image.shape
 height = sz[0]
@@ -13,7 +13,7 @@ width = sz[1]
 print('Stacking', n_frames, 'frames with', n_stack, height, 'x', width, 'images each.')
 
 
-def process_frame(frame_index):
+def process_frame(scene, frame_index):
     # Specify the number of iterations.
     number_of_iterations = 3
     # Specify the threshold of the increment
