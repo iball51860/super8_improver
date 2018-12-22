@@ -51,14 +51,16 @@ class SceneDetector:
 
             frames = self.getFramesForCurrentScan()
 
-            self.newScene(np.nan)
-            lastFrame = np.zeros(cv2.imread(frames[0]).shape)
+            if not len(frames) == 0:
+                self._currentFramePath = frames[0]
+                self.newScene(np.nan)
+                lastFrame = np.zeros(cv2.imread(frames[0]).shape)
             for frame_index in range(0, len(frames)):
                 self._scanFrameNo = frame_index
                 self._sceneFrameCounter += 1
-
                 self._currentFramePath = frames[self._scanFrameNo]
                 frame = cv2.imread(self._currentFramePath)
+
                 diff, frameDup, frameOK = self.analyzeFrame(frame, lastFrame, frames)
 
                 if frameOK:
@@ -78,7 +80,7 @@ class SceneDetector:
                 cv2.imwrite(frameOutPath, frame)
                 if frameDup:
                     self._duplicatesPaths.append(frameOutPath)
-                else:
+                elif not frameOK:
                     self._erroneousPaths.append(frameOutPath)
 
             sns.lineplot([n for n in range(0, len(self._diffs) - 1)], self._diffs[1:])
@@ -129,14 +131,15 @@ class SceneDetector:
         return diff, frameDup, frameOK
 
     def newScene(self, diff,):
-        newDuplicates = len(self._duplicatesPaths) - self._accumulatedDuplicates
-        newErroneous = len(self._erroneousPaths) - self._accumulatedErroneous
-        oldSceneDict = {**self._sceneDict,
-                        'length': self._sceneFrameCounter,
-                        'duplicates': newDuplicates,
-                        'erroneous': newErroneous,
-                        'end_frame': self._scanFrameNo - 1}
-        self.infoDicts.append(oldSceneDict)
+        if self._sceneNo >= 0:
+            newDuplicates = len(self._duplicatesPaths) - self._accumulatedDuplicates
+            newErroneous = len(self._erroneousPaths) - self._accumulatedErroneous
+            oldSceneDict = {**self._sceneDict,
+                            'length': self._sceneFrameCounter,
+                            'duplicates': newDuplicates,
+                            'erroneous': newErroneous,
+                            'end_frame': self._scanFrameNo - 1}
+            self.infoDicts.append(oldSceneDict)
         self._sceneNo += 1
         self._sceneFrameCounter = 0
         self._accumulatedDuplicates = len(self._duplicatesPaths)

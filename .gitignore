@@ -5,3 +5,4 @@ out
 input
 results/
 singleframe_test/
+__pycache__
