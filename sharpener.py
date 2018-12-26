@@ -1,7 +1,6 @@
 import os
 from multiprocessing import Pool
 
-import numpy as np
 from PIL import Image, ImageFilter
 
 n_stack = len(os.listdir('input'))

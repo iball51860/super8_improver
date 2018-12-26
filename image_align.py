@@ -40,7 +40,7 @@ def alignAndStackScene(projectDir, scanDirectories, sceneName):
     for scanDir in scanDirectories:
         scanName = os.path.basename(scanDir)
         os.makedirs(os.path.join(projectDir, 'output/aligned', scanName, sceneName))
-        os.makedirs(os.path.join(projectDir, 'output/averaged', sceneName), exist_ok=True)
+        os.makedirs(os.path.join(projectDir, 'output/average', sceneName), exist_ok=True)
         os.makedirs(os.path.join(projectDir, 'output/median', sceneName), exist_ok=True)
         sceneInputDir = os.path.join(scanDir, sceneName)
         framePaths.append([framePath.path for framePath in os.scandir(sceneInputDir) if framePath.path.endswith('.jpg')])

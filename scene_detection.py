@@ -2,8 +2,6 @@ import os
 import cv2
 import numpy as np
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 
 class SceneDetector:
@@ -82,9 +80,6 @@ class SceneDetector:
                     self._duplicatesPaths.append(frameOutPath)
                 elif not frameOK:
                     self._erroneousPaths.append(frameOutPath)
-
-            sns.lineplot([n for n in range(0, len(self._diffs) - 1)], self._diffs[1:])
-            plt.show()
 
         print(f'duplicates:', '\n'.join(self._duplicatesPaths))
         print(f'erroneous:', '\n'.join(self._erroneousPaths))
