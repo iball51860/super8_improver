@@ -1,5 +1,4 @@
 pandas
 numpy
 Pillow
-Pillow-SIMD
 opencv-python
