@@ -20,9 +20,14 @@ def createVideoFromFrames(outPath: str, framesDirectory: str):
     print(f'writing {len(framePaths)} to {outPath}')
 
     height, width = 2408, 1770
+    fourcc = cv2.VideoWriter.fourcc(*'H264')
     writer = cv2.VideoWriter(outPath, 0x21, 18, (height, width), True)
     writer.set(cv2.VIDEOWRITER_PROP_QUALITY, 1)
+    print('fourcc =', hex(fourcc))
+    print('VideoWriter isOpened:', writer.isOpened(),
+          '\nVideoWriter Backend:', writer.getBackendName())
 
     for framePath in framePaths:
         im = cv2.imread(framePath)
         writer.write(im)
+    writer.release()
