@@ -17,15 +17,11 @@ def createVideos(inputScenesDir: str):
 def createVideoFromFrames(outPath: str, framesDirectory: str):
     framePaths = [framePath.path for framePath in os.scandir(framesDirectory) if framePath.path.endswith('.jpg')]
     framePaths.sort()
-    print(f'writing {len(framePaths)} to {outPath}')
-
-    height, width = 2408, 1770
-    fourcc = cv2.VideoWriter.fourcc(*'H264')
-    writer = cv2.VideoWriter(outPath, 0x21, 18, (height, width), True)
+    
+    height, width, channels = cv2.imread(framePaths[0]).shape
+    
+    writer = cv2.VideoWriter(outPath, 0x21, 18, (width, height), True)
     writer.set(cv2.VIDEOWRITER_PROP_QUALITY, 1)
-    print('fourcc =', hex(fourcc))
-    print('VideoWriter isOpened:', writer.isOpened(),
-          '\nVideoWriter Backend:', writer.getBackendName())
 
     for framePath in framePaths:
         im = cv2.imread(framePath)
