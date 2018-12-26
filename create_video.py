@@ -7,7 +7,7 @@ def createVideos(inputScenesDir: str):
     videoOutDir = os.path.join(outDirectory, 'video')
     os.makedirs(videoOutDir)
     scenePaths = [subdir for subdir in os.scandir(inputScenesDir) if os.path.isdir(subdir.path)]
-    scenePaths.sort()
+    scenePaths.sort(key=lambda dirE: dirE.name)
     for scene in scenePaths:
         print('creating video for ', scene.name)
         outPath = os.path.join(videoOutDir, scene.name + '.mp4')
