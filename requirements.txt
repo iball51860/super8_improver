@@ -1,6 +1,7 @@
 pandas
 numpy
-opencv-python
 Pillow
 Pillow-SIMD
+opencv-python
 seaborn
+imutils

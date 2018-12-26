@@ -1,7 +1,8 @@
-FROM python:3.7.1
+FROM jjanzic/docker-python3-opencv
 
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN sed -i '/opencv-python/d' ./requirements.txt \
+ && pip install --no-cache-dir -r requirements.txt
 
 WORKDIR /opt/project
 
