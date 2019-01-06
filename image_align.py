@@ -1,4 +1,5 @@
 import os
+import sys
 from multiprocessing import Pool
 import cv2
 import numpy as np
@@ -16,12 +17,16 @@ def alignAndStack(projectDir: str):
 
     sceneLengthInfos = [getSceneLengths(scanDir) for scanDir in scanDirectories]
 
-    for sceneLengthInfoDict in sceneLengthInfos[1:]:
+    for i, sceneLengthInfoDict in enumerate(sceneLengthInfos[1:]):
         if sceneLengthInfoDict != sceneLengthInfos[0]:
-            print(sceneLengthInfos[0], '\n-----\n', sceneLengthInfoDict)
-            raise ValueError('Scans seem to have different scenes or scene lengths.')
+            different = []
+            for key in sceneLengthInfoDict.keys():
+                if sceneLengthInfoDict[key] != sceneLengthInfos[0][key]:
+                    different.append(f'scan0[{key}] - frames {sceneLengthInfos[0][key]}  |  {sceneLengthInfoDict[key]} frames - scan{i}[{key}]')
+            raise ValueError('Scans seem to have different scenes or scene lengths.\n' + '\n'.join(different))
 
-    sceneNames = sceneLengthInfos[0].keys()
+    sceneNames = list(sceneLengthInfos[0].keys())
+    sceneNames.sort()
     for sceneName in sceneNames:
         alignAndStackScene(projectDir, scanDirectories, sceneName)
 
@@ -43,7 +48,9 @@ def alignAndStackScene(projectDir, scanDirectories, sceneName):
         os.makedirs(os.path.join(projectDir, 'output/average', sceneName), exist_ok=True)
         os.makedirs(os.path.join(projectDir, 'output/median', sceneName), exist_ok=True)
         sceneInputDir = os.path.join(scanDir, sceneName)
-        framePaths.append([framePath.path for framePath in os.scandir(sceneInputDir) if framePath.path.endswith('.jpg')])
+        framePathsInScanDir = [framePath.path for framePath in os.scandir(sceneInputDir) if framePath.path.endswith('.jpg')]
+        framePathsInScanDir.sort()
+        framePaths.append(framePathsInScanDir)
     framePaths = list(zip(*framePaths))
     try:
         pool = Pool()
@@ -53,10 +60,33 @@ def alignAndStackScene(projectDir, scanDirectories, sceneName):
         pool.join()
 
 
+def spreadHist(im: np.core.multiarray, grey: np.core.multiarray):
+    maskedGray = grey[20:(grey.shape[0]-20), 20:(grey.shape[1]-20)]
+    pixels = maskedGray.shape[0] * maskedGray.shape[1]
+    leftThreshold = np.floor(pixels * 0.005)
+    rightThreshold = pixels - leftThreshold
+    hist = np.histogram(maskedGray, range(0, 257))
+    cumHist = np.cumsum(hist[0])
+    histMask = (cumHist > leftThreshold) & (cumHist < rightThreshold)
+    existingValues = hist[1][:-1][histMask]
+    lower = np.min(existingValues)
+    upper = np.max(existingValues)
+    alpha = 255 / (upper - lower)
+    imMinBefore = np.min(im)
+    imMaxBefore = np.max(im)
+    lowerMask = im < lower
+    upperMask = im > upper
+    im = (im - lower) * alpha
+    im[upperMask] = 255
+    im[lowerMask] = 0
+    im = np.floor(im)
+    return im
+
+
 def process_frame(framePaths: tuple):
     width, height = (1204, 885)
     # Specify the number of iterations.
-    number_of_iterations = 3
+    number_of_iterations = 50
     # Specify the threshold of the increment
     # in the correlation coefficient between two iterations
     termination_eps = 5e-10
@@ -66,6 +96,7 @@ def process_frame(framePaths: tuple):
 
     stack = np.array([cv2.imread(path) for path in framePaths])
     stack_grey = np.array([cv2.cvtColor(im, cv2.COLOR_BGR2GRAY) for im in stack])
+    stack = np.array([spreadHist(im, grey) for im, grey in zip(stack, stack_grey)])
 
     ccs = []
     for layer_index, im_gray in enumerate(stack_grey[1:], 1):
@@ -79,7 +110,6 @@ def process_frame(framePaths: tuple):
             warp_matrix,
             (width, height),
             flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP)
-
     scaled_stack = [cv2.resize(im, (width*2, height*2), interpolation=cv2.INTER_LANCZOS4) for im in stack]
 
     projectPath, sceneName, frameName = '_'*3
